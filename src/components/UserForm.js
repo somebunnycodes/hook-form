@@ -1,90 +1,71 @@
-import React, {useState} from 'react';
-    
+import React, {useReducer} from 'react';
+
+const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+
+const initialState = {
+    firstname: "",
+    firstnameError: "",
+    lastname: "",
+    lastnameError: "",
+    email: "",
+    emailError: "",
+}
+
+const reducer = (state, action) => {
+    return {
+        ...state,
+        [action.type]: action.payload
+    };
+}
+
 const UserForm = (props) => {
-    const [firstname, setFirstname] = useState("");
-    const [firstnameError, setFirstnameError] = useState("");
-    const [lastname, setLastname] = useState("");
-    const [lastnameError, setLastnameError] = useState("");
-    const [email, setEmail] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [password, setPassword] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+    const [state, dispatch] = useReducer(reducer, initialState);
     
     const createUser = (e) => {
         e.preventDefault();
-        console.log(`Welcome, ${props.firstname} ${props.lastname}`);
-        setFirstname("");
-        setLastname("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
     };
 
     const handleFirstname = (e) => {
-        setFirstname(e.target.value);
+        dispatch({type: "firstname", payload: e.target.value});
         if(e.target.value.length < 1) {
-            setFirstnameError("Enter first name");
+            dispatch({type: "firstnameError", payload: "Enter first name"});
         } else if (e.target.value.length < 2) {
-            setFirstnameError("First name must be at least 2 characters long!");
+            dispatch({type: "firstnameError", payload: "First name must be at least 2 characters long!"});
         } else {
-            setFirstnameError("");
+            dispatch({type: "firstnameError", payload: ""});
         }
     }
 
     const handleLastname = (e) => {
-        setLastname(e.target.value);
+        dispatch({type: "lastname", payload: e.target.value});
         if(e.target.value.length < 1) {
-            setLastnameError("Enter last name");
+            dispatch({type: "lastnameError", payload: "Enter last name"});
         } else if (e.target.value.length <= 2) {
-            setLastnameError("Last name must be at least 2 characters long!");
+            dispatch({type: "lastnameError", payload: "Last name must be at least 2 characters long!"});
         } else {
-            setLastnameError("");
+            dispatch({type: "lastnameError", payload: ""});
         }
     }
 
     const handleEmail = (e) => {
-        setEmail(e.target.value);
+        dispatch({type: "email", payload: e.target.value});
         if(e.target.value.length < 1) {
-            setEmailError("Enter email");
+            dispatch({type: "emailError", payload: "Enter email"});
         } else if (e.target.value.length <= 5) {
-            setEmailError("Email must be at least 8 characters long!");
+            dispatch({type: "emailError", payload: "Email must be at least 8 characters long!"});
+        } else if (!e.target.value.match(emailRegex)) {
+            dispatch({type: "emailError", payload: "Must enter a valid email address"});
         } else {
-            setEmailError("");
-        }
-    }
-
-    const handlePassword = (e) => {
-        setPassword(e.target.value);
-        if(e.target.value.length < 1) {
-            setPasswordError("Enter password");
-        } else if (e.target.value.length < 8) {
-            setPasswordError("Password must be at least 8 characters long!");
-        } else {
-            setPasswordError("");
-        }
-    }
-
-    const handleConfirmPassword = (e) => {
-        setConfirmPassword(e.target.value);
-        if(e.target.value.length < 1) {
-            setConfirmPasswordError("Confirm password");
-        } else if (e.target.value.length < 8) {
-            setConfirmPasswordError("Password must be at least 8 characters long!");
-        } else if (password !== confirmPassword) {
-            setConfirmPasswordError("Passwords must match");
-        } else {
-            setPasswordError("");
+            dispatch({type: "emailError", payload: ""});
         }
     }
 
     const isEmpty = () => {
-        return !(firstname && lastname && email && password && confirmPassword);
+        return !(state.firstname && state.lastname && state.email);
     }
 
     const hasErrors = () => {
-        return firstnameError || lastnameError || emailError || passwordError || confirmPasswordError;
+        return state.firstnameError || state.lastnameError || state.emailError ;
     }
     
     return (
@@ -92,28 +73,18 @@ const UserForm = (props) => {
             <form onSubmit={ createUser }>
                 <div>
                     <label>First name: </label> 
-                    <input type="text" value={firstname} onChange={handleFirstname} />
-                    {firstnameError ? <p>{firstnameError}</p> : ''}
+                    <input type="text" value={state.firstname} onChange={handleFirstname} />
+                    {state.firstnameError ? <p>{state.firstnameError}</p> : ''}
                 </div>
                 <div>
                     <label>Last name: </label> 
-                    <input type="text" value={lastname} onChange={handleLastname} />
-                    {lastnameError ? <p>{lastnameError}</p> : ''}
+                    <input type="text" value={state.lastname} onChange={handleLastname} />
+                    {state.lastnameError ? <p>{state.lastnameError}</p> : ''}
                 </div>
                 <div>
                     <label>Email Address: </label> 
-                    <input type="email" value={email} onChange={handleEmail} />
-                    {emailError ? <p>{emailError}</p> : ''}
-                </div>
-                <div>
-                    <label>Password: </label>
-                    <input type="password" value={password} onChange={handlePassword} />
-                    {passwordError ? <p>{passwordError}</p> : ''}
-                </div>
-                <div>
-                    <label>Confirm Password: </label>
-                    <input type="password" value={confirmPassword} onChange={handleConfirmPassword} />
-                    {confirmPasswordError ? <p>{confirmPasswordError}</p> : ''}
+                    <input type="email" value={state.email} onChange={handleEmail} />
+                    {state.emailError ? <p>{state.emailError}</p> : ''}
                 </div>
                 {
                     (isEmpty() || hasErrors()) ?
@@ -123,26 +94,20 @@ const UserForm = (props) => {
             </form>
             <h3>Your Form Data</h3>
             <table>
-                <tr>
-                    <td>First Name:</td>
-                    <td>{firstname}</td>
-                </tr>
-                <tr>
-                    <td>Last Name:</td>
-                    <td>{lastname}</td>
-                </tr>
-                <tr>
-                    <td>Email:</td>
-                    <td>{email}</td>
-                </tr>
-                <tr>
-                    <td>Password:</td>
-                    <td>{password}</td>
-                </tr>
-                <tr>
-                    <td>Confirm Password:</td>
-                    <td>{confirmPassword}</td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>First Name:</td>
+                        <td>{state.firstname}</td>
+                    </tr>
+                    <tr>
+                        <td>Last Name:</td>
+                        <td>{state.lastname}</td>
+                    </tr>
+                    <tr>
+                        <td>Email:</td>
+                        <td>{state.email}</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     );
